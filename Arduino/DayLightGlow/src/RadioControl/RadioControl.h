@@ -3,14 +3,14 @@
 
 #include <Arduino.h>
 
-class EncoderControl
+class RadioControl
 {
   public:
     RadioControl();
     ~RadioControl();
 
     void init();
-    void update(uint32_t cycleTime = 0);
+    void update(const uint32_t &cycleTime = 0);
 
 
   private:
