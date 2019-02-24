@@ -115,19 +115,12 @@ uint8_t drawHomeScreen()
     // Handle dual click
     ////////////////////////////////////////
 
-    if (encoderLeft.changed() && encoderRight.changed())
+    if (encoderLeft.longPress() && encoderRight.longPress())
     {
-
-        if (encoderLeft.longPress() && encoderRight.longPress())
-        {
-            dateTime = now();
-            oled.forceUpdate();
-            return SCREEN_TIME;
-        }
-
+        dateTime = now();
         encoderLeft.reset();
         encoderRight.reset();
-        return SCREEN_HOME;
+        return SCREEN_TIME;
     }
 
     ////////////////////////////////////////
@@ -324,25 +317,24 @@ uint8_t active(const time_t &alarm, const uint8_t &enabled) {
 void updateWakeUpLight()
 {
     static uint16_t lastStep = 0;
-    static uint8_t white     = 0;
-    static uint8_t red       = 0;
-    static uint8_t blue      = 0;
-
     uint16_t step = 300 - ((min(alarm0, alarm1) - now()) * 300 / START_LIGHT);
 
-    if (step != lastStep)
+    if (step != lastStep && step <= 300)
     {
+        uint8_t white = 0;
+        uint8_t red   = 0;
+        uint8_t blue  = 0;
+
         if (step < 255)
             white = step;
         else
             white = 255;
 
-        if (red <= 100 && step <= 100)
+        if (step <= 100)
             red = step;
-        else if (red > 0)
+        else if (step > 100 && step <= 200)
             red = 200 - step;
-
-        if (blue <= 100 && step >= 200)
+        else if (step > 200)
             blue = step - 200;
 
         lastStep = step;
@@ -357,6 +349,7 @@ void resetWakeUpLight()
 {
     analogWrite(LED_WHITE_PIN, 0);
     analogWrite(LED_RED_PIN,   0);
+    analogWrite(LED_GREEN_PIN, 0);
     analogWrite(LED_BLUE_PIN,  0);
 }
 
