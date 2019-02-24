@@ -1,0 +1,6 @@
+
+*.d
+Arduino/DayLightGlow/.project
+Arduino/DayLightGlow/.cproject
+Arduino/DayLightGlow/.settings/language.settings.xml
+Arduino/DayLightGlow/.settings/org.eclipse.cdt.core.prefs
