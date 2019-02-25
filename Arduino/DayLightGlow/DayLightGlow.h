@@ -317,7 +317,9 @@ uint8_t active(const time_t &alarm, const uint8_t &enabled) {
 void updateWakeUpLight()
 {
     static uint16_t lastStep = 0;
-    uint16_t step = 300 - ((min(alarm0, alarm1) - now()) * 300 / START_LIGHT);
+
+    uint16_t diff = START_LIGHT - (min(alarm0, alarm1) - now());
+    uint16_t step = pow(2, (8.229 * diff / START_LIGHT));
 
     if (step != lastStep && step <= 300)
     {
@@ -334,8 +336,10 @@ void updateWakeUpLight()
             red = step;
         else if (step > 100 && step <= 200)
             red = 200 - step;
-        else if (step > 200)
+        else if (step > 200 && step <= 300)
             blue = step - 200;
+        else
+            blue = 100;
 
         lastStep = step;
 
