@@ -220,21 +220,39 @@ void loop()
             static uint8_t detected = 0;
 
             sleepMode = (active(alarm0, alarm0enabled)  | active(alarm1, alarm1enabled));
-
-            if (sensorLamp.handDetected(10) == 1)
+            if (sleepMode == ACTIVE_SLEEP)
             {
-                detected = (detected > 0) ? 0 : 1;
+                // Disable wake-up light
+                resetWakeUpLight();
+
+                // Reset detected state
+                detected = 0;
             }
-
-            if (!detected || sleepMode == ACTIVE_WAKEUP)
+            else if (sleepMode == ACTIVE_WAKEUP)
             {
-                // Update wake-up light
+                // Enable wake-up light
                 updateWakeUpLight();
+
+                // Reset detected state
+                detected = 0;
             }
             else
             {
-                // Disable light, but keep alarm on
-                resetWakeUpLight();
+                if (sensorLamp.handDetected(10) == 1)
+                {
+                    detected = (detected > 0) ? 0 : 1;
+                }
+
+                if (!detected)
+                {
+                    // Update wake-up light
+                    updateWakeUpLight();
+                }
+                else
+                {
+                    // Disable light, but keep alarm on
+                    resetWakeUpLight();
+                }
             }
         }
         break;
@@ -301,33 +319,51 @@ void loop()
 
     case ACTIVE_SNOOZE:
         {
-
-            uint8_t detected = sensorLamp.handDetected(10);
-
-            if (detected == 2)
+            uint8_t mode = (active(alarm0, alarm0enabled)  | active(alarm1, alarm1enabled));
+            if (mode == ACTIVE_SLEEP)
             {
-                // Reset alarm for tomorrow
-                initAlarm();
-                oled.setAlarm(alarm0, 0, alarm0enabled);
-                oled.setAlarm(alarm1, 1, alarm1enabled);
-
-                // Mute
-                mute = 1;
-                Radio.FMRM_audio_mute(mute);
-                oled.setVolume(volume, mute);
-                oled.forceUpdate();
-
-                // Disable light
+                // Disable wake-up light
                 resetWakeUpLight();
 
                 // Change mode
                 sleepMode = ACTIVE_SLEEP;
             }
-
-            if ((active(alarm0, alarm0enabled)  | active(alarm1, alarm1enabled)) ==  ACTIVE_WAKEUP)
+            else if (mode == ACTIVE_WAKEUP)
             {
+                // Enable wake-up light
+                updateWakeUpLight();
+
                 // Change mode
                 sleepMode = ACTIVE_WAKEUP;
+            }
+            else
+            {
+                uint8_t detected = sensorLamp.handDetected(10);
+
+                if (detected == 1)
+                {
+                    // Disable light
+                    resetWakeUpLight();
+                }
+                else if (detected == 2)
+                {
+                    // Reset alarm for tomorrow
+                    initAlarm();
+                    oled.setAlarm(alarm0, 0, alarm0enabled);
+                    oled.setAlarm(alarm1, 1, alarm1enabled);
+
+                    // Mute
+                    mute = 1;
+                    Radio.FMRM_audio_mute(mute);
+                    oled.setVolume(volume, mute);
+                    oled.forceUpdate();
+
+                    // Disable light
+                    resetWakeUpLight();
+
+                    // Change mode
+                    sleepMode = ACTIVE_SLEEP;
+                }
             }
         }
         break;
